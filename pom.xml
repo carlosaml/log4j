@@ -519,7 +519,7 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
           <targetJdk>1.6</targetJdk>
           <excludes>
               <exclude>**/LogMF.java</exclude>
-              <exclude>**/LogSF.java</exclude>
+              <exclude>**/jmx/*.java</exclude>
           </excludes>
         </configuration>
       </plugin>
