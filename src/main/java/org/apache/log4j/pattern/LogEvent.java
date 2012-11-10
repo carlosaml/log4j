@@ -36,18 +36,6 @@ import org.apache.log4j.spi.ThrowableInformation;
  */
 public class LogEvent extends LogEventBase {
 
-  private static long startTime = System.currentTimeMillis();
-
-    /**
-   * <p>The category (logger) name.
-   *   
-   * @deprecated This field will be marked as private in future
-   * releases. Please do not access it directly. Use the {@link
-   * #getLoggerName} method instead.
-
-   * */
-  final public String categoryName;
-
 
   // Serialization
   static final long serialVersionUID = -868428216207166145L;
@@ -152,65 +140,5 @@ public class LogEvent extends LogEventBase {
         mdcCopy = new java.util.Hashtable(properties);
       }
     }
-
-  /**
-     Set the location information for this logging event. The collected
-     information is cached for future use.
-   */
-  public LocationInfo getLocationInformation() {
-    if(locationInfo == null) {
-      locationInfo = new LocationInfo(new Throwable(), fqnOfCategoryClass);
-    }
-    return locationInfo;
-  }
-
-  /**
-   * Return the level of this event. Use this form instead of directly
-   * accessing the <code>level</code> field.  */
-  public Level getLevel() {
-    return super.getLevel();
-  }
-
-  /**
-   * Return the name of the logger. Use this form instead of directly
-   * accessing the <code>categoryName</code> field.  
-   */
-  public String getLoggerName() {
-    return categoryName;
-  }
-
-
-    /**
-     Returns the time when the application started, in milliseconds
-     elapsed since 01.01.1970.  */
-  public static long getStartTime() {
-    return startTime;
-  }
-
-    /**
-     Returns the throwable information contained within this
-     event. May be <code>null</code> if there is no such information.
-
-     <p>Note that the {@link Throwable} object contained within a
-     {@link ThrowableInformation} does not survive serialization.
-
-     @since 1.1 */
-  public
-  ThrowableInformation getThrowableInformation() {
-    return super.getThrowableInformation();
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
