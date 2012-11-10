@@ -41,7 +41,7 @@ import java.util.*;
  * in the byte stream.
  *
  */
-public class LogEvent extends LogEventBase implements java.io.Serializable {
+public class LogEvent extends LogEventBase {
 
   private static long startTime = System.currentTimeMillis();
 

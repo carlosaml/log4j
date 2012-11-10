@@ -17,24 +17,16 @@
 
 package org.apache.log4j.spi;
 
+import org.apache.log4j.*;
+import org.apache.log4j.helpers.Loader;
+import org.apache.log4j.helpers.LogLog;
+
 import java.io.InterruptedIOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Category;
-import org.apache.log4j.Level;
-import org.apache.log4j.MDC;
-import org.apache.log4j.NDC;
-import org.apache.log4j.Priority;
-import org.apache.log4j.helpers.Loader;
-import org.apache.log4j.helpers.LogLog;
+import java.util.*;
 
 // Contributors:   Nelson Minar <nelson@monkey.org>
 //                 Wolf Siberski
@@ -52,24 +44,12 @@ import org.apache.log4j.helpers.LogLog;
    @author James P. Cakalic
 
    @since 0.8.2 */
-public class LoggingEvent implements java.io.Serializable {
+public class LoggingEvent extends LogEventBase {
 
   private static long startTime = System.currentTimeMillis();
 
   /** Fully qualified name of the calling category class. */
   transient public final String fqnOfCategoryClass;
-
-  /** 
-   * The category of the logging event. This field is not serialized
-   * for performance reasons.
-   *
-   * <p>It is set by the LoggingEvent constructor or set by a remote
-   * entity after deserialization.
-   * 
-   * @deprecated This field will be marked as private or be completely
-   * removed in future releases. Please do not use it.
-   * */
-  transient private Category logger;
 
   /** 
    * <p>The category (logger) name.
@@ -94,41 +74,6 @@ public class LoggingEvent implements java.io.Serializable {
    * #getLevel} method instead.
    * */
   transient public Priority level;
-
-  /** The nested diagnostic context (NDC) of logging event. */
-  private String ndc;
-
-  /** The mapped diagnostic context (MDC) of logging event. */
-  private Hashtable mdcCopy;
-
-
-  /** Have we tried to do an NDC lookup? If we did, there is no need
-   *  to do it again.  Note that its value is always false when
-   *  serialized. Thus, a receiving SocketNode will never use it's own
-   *  (incorrect) NDC. See also writeObject method. */
-  private boolean ndcLookupRequired = true;
-
-
-  /** Have we tried to do an MDC lookup? If we did, there is no need
-   *  to do it again.  Note that its value is always false when
-   *  serialized. See also the getMDC and getMDCCopy methods.  */
-  private boolean mdcCopyLookupRequired = true;
-
-  /** The application supplied message of logging event. */
-  transient private Object message;
-
-  /** The application supplied message rendered through the log4j
-      objet rendering mechanism.*/
-  private String renderedMessage;
-
-  /** The name of thread in which this logging event was generated. */
-  private String threadName;
-
-
-  /** This
-      variable contains information about this event's throwable
-  */
-  private ThrowableInformation throwableInfo;
 
   /** The number of milliseconds elapsed from 1/1/1970 until logging event
       was created. */
@@ -279,100 +224,6 @@ public class LoggingEvent implements java.io.Serializable {
       return logger;
     }
 
-  /**
-     Return the message for this logging event.
-
-     <p>Before serialization, the returned object is the message
-     passed by the user to generate the logging event. After
-     serialization, the returned value equals the String form of the
-     message possibly after object rendering.
-
-     @since 1.1 */
-  public
-  Object getMessage() {
-    if(message != null) {
-      return message;
-    } else {
-      return getRenderedMessage();
-    }
-  }
-
-  /**
-   * This method returns the NDC for this event. It will return the
-   * correct content even if the event was generated in a different
-   * thread or even on a different machine. The {@link NDC#get} method
-   * should <em>never</em> be called directly.  */
-  public
-  String getNDC() {
-    if(ndcLookupRequired) {
-      ndcLookupRequired = false;
-      ndc = NDC.get();
-    }
-    return ndc;
-  }
-
-
-  /**
-      Returns the the context corresponding to the <code>key</code>
-      parameter. If there is a local MDC copy, possibly because we are
-      in a logging server or running inside AsyncAppender, then we
-      search for the key in MDC copy, if a value is found it is
-      returned. Otherwise, if the search in MDC copy returns a null
-      result, then the current thread's <code>MDC</code> is used.
-      
-      <p>Note that <em>both</em> the local MDC copy and the current
-      thread's MDC are searched.
-
-  */
-  public
-  Object getMDC(String key) {
-    Object r;
-    // Note the mdcCopy is used if it exists. Otherwise we use the MDC
-    // that is associated with the thread.
-    if(mdcCopy != null) {
-      r = mdcCopy.get(key);
-      if(r != null) {
-        return r;
-      }
-    }
-    return MDC.get(key);
-  }
-
-  /**
-     Obtain a copy of this thread's MDC prior to serialization or
-     asynchronous logging.  
-  */
-  public
-  void getMDCCopy() {
-    if(mdcCopyLookupRequired) {
-      mdcCopyLookupRequired = false;
-      // the clone call is required for asynchronous logging.
-      // See also bug #5932.
-      Hashtable t = MDC.getContext();
-      if(t != null) {
-	mdcCopy = (Hashtable) t.clone();
-      }
-    }
-  }
-
-  public
-  String getRenderedMessage() {
-     if(renderedMessage == null && message != null) {
-       if(message instanceof String)
-	 renderedMessage = (String) message;
-       else {
-	 LoggerRepository repository = logger.getLoggerRepository();
-
-	 if(repository instanceof RendererSupport) {
-	   RendererSupport rs = (RendererSupport) repository;
-	   renderedMessage= rs.getRendererMap().findAndRender(message);
-	 } else {
-	   renderedMessage = message.toString();
-	 }
-       }
-     }
-     return renderedMessage;
-  }
 
   /**
      Returns the time when the application started, in milliseconds
@@ -381,12 +232,6 @@ public class LoggingEvent implements java.io.Serializable {
     return startTime;
   }
 
-  public
-  String getThreadName() {
-    if(threadName == null)
-      threadName = (Thread.currentThread()).getName();
-    return threadName;
-  }
 
   /**
      Returns the throwable information contained within this
@@ -400,19 +245,6 @@ public class LoggingEvent implements java.io.Serializable {
   ThrowableInformation getThrowableInformation() {
     return throwableInfo;
   }
-
-  /**
-     Return this event's throwable's string[] representaion.
-  */
-  public
-  String[] getThrowableStrRep() {
-
-    if(throwableInfo ==  null)
-      return null;
-    else
-      return throwableInfo.getThrowableStrRep();
-  }
-
 
   private
   void readLevel(ObjectInputStream ois)

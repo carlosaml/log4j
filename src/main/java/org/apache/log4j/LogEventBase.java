@@ -13,7 +13,7 @@ import java.util.Hashtable;
  * Time: 12:15 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LogEventBase {
+public class LogEventBase implements java.io.Serializable {
     /**
      * The category of the logging event. This field is not serialized
      * for performance reasons.
