@@ -87,7 +87,31 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
   </organization>
   <build>
     <plugins>
-      <plugin>
+
+
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.6.0.201210061924</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>report</id>
+                    <phase>prepare-package</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+
+
+
+        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <configuration>
@@ -102,7 +126,12 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
           <reportFormat>plain</reportFormat>
           <forkMode>pertest</forkMode>
           <skip>false</skip>
+
           <includes>
+            <include>org/apache/log4j/TestLogMF.java</include>
+            <include>org/apache/log4j/TestLogSF.java</include>
+            <include>org/apache/log4j/TestLogXF.java</include>
+
             <include>org/apache/log4j/LevelTest.java</include>
             <include>org/apache/log4j/PriorityTest.java</include>
             <include>org/apache/log4j/CategoryTest.java</include>
@@ -126,13 +155,9 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
             <include>org/apache/log4j/xml/DOMTestCase.java</include>
             <include>org/apache/log4j/xml/CustomLevelTestCase.java</include>
             <include>org/apache/log4j/customLogger/XLoggerTestCase.java</include>
-            <!-- DefaultInit -->
-            <!-- SocketServer -->
             <include>org/apache/log4j/xml/XMLLayoutTestCase.java</include>
             <include>org/apache/log4j/xml/AsyncAppenderTestCase.java</include>
             <include>org/apache/log4j/varia/LevelMatchFilterTestCase.java</include>
-            <!-- ErrorHandlerTestCase is not run in Ant build either <include>org/apache/log4j/varia/ErrorHandlerTestCase.java</include> -->
-            <!-- include>org/apache/log4j/helpers/OptionConverterTestCase.java</include -->
             <include>org/apache/log4j/helpers/BoundedFIFOTestCase.java</include>
             <include>org/apache/log4j/helpers/CyclicBufferTestCase.java</include>
             <include>org/apache/log4j/helpers/PatternParserTestCase.java</include>
@@ -144,6 +169,7 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
             <include>org/apache/log4j/nt/NTEventLogAppenderTest</include>
             <include>org/apache/log4j/net/SocketAppenderTest</include>
           </includes>
+
         </configuration>
       </plugin>
       <plugin>
@@ -458,6 +484,8 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
                 </instructions>
             </configuration>
         </plugin>
+
+
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.1</version>
@@ -470,6 +498,7 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
           </execution>
         </executions>
       </plugin>
+
     </plugins>
     <testSourceDirectory>tests/src/java</testSourceDirectory>
     <testResources>
@@ -480,6 +509,16 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
   </build>
   <reporting>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>2.7.1</version>
+        <configuration>
+          <linkXref>true</linkXref>
+          <minimumTokens>150</minimumTokens>
+          <targetJdk>1.6</targetJdk>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.4</version>
