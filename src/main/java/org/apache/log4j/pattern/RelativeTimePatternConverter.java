@@ -17,6 +17,7 @@
 
 package org.apache.log4j.pattern;
 
+import org.apache.log4j.LogEventBase;
 import org.apache.log4j.spi.LoggingEvent;
 
 
@@ -57,7 +58,7 @@ public class RelativeTimePatternConverter extends LoggingEventPatternConverter {
 
     if (!lastTimestamp.format(timestamp, toAppendTo)) {
       final String formatted =
-        Long.toString(timestamp - LoggingEvent.getStartTime());
+        Long.toString(timestamp - LogEventBase.getStartTime());
       toAppendTo.append(formatted);
       lastTimestamp = new CachedTimestamp(timestamp, formatted);
     }

@@ -19,8 +19,6 @@ package org.apache.log4j.spi;
 
 import org.apache.log4j.*;
 
-import java.util.*;
-
 // Contributors:   Nelson Minar <nelson@monkey.org>
 //                 Wolf Siberski
 //                 Anders Kristensen <akristensen@dynamicsoft.com>
@@ -38,18 +36,6 @@ import java.util.*;
 
    @since 0.8.2 */
 public class LoggingEvent extends LogEventBase {
-
-  private static long startTime = System.currentTimeMillis();
-
-    /**
-   * <p>The category (logger) name.
-   *   
-   * @deprecated This field will be marked as private in future
-   * releases. Please do not access it directly. Use the {@link
-   * #getLoggerName} method instead.
-
-   * */
-  final public String categoryName;
 
     // Serialization
   static final long serialVersionUID = -868428216207166145L;
@@ -156,79 +142,4 @@ public class LoggingEvent extends LogEventBase {
     }
 
 
-  /**
-     Set the location information for this logging event. The collected
-     information is cached for future use.
-   */
-  public LocationInfo getLocationInformation() {
-    if(locationInfo == null) {
-      locationInfo = new LocationInfo(new Throwable(), getFQNOfLoggerClass());
-    }
-    return locationInfo;
-  }
-
-  /**
-   * Return the level of this event. Use this form instead of directly
-   * accessing the <code>level</code> field.  */
-  public Level getLevel() {
-    return (Level) level;
-  }
-
-  /**
-   * Return the name of the logger. Use this form instead of directly
-   * accessing the <code>categoryName</code> field.  
-   */
-  public String getLoggerName() {
-    return categoryName;
-  }
-
-    /**
-     * Gets the logger of the event.
-     * Use should be restricted to cloning events.
-     * @since 1.2.15
-     */
-    public Category getLogger() {
-      return logger;
-    }
-
-
-  /**
-     Returns the time when the application started, in milliseconds
-     elapsed since 01.01.1970.  */
-  public static long getStartTime() {
-    return startTime;
-  }
-
-
-  /**
-     Returns the throwable information contained within this
-     event. May be <code>null</code> if there is no such information.
-
-     <p>Note that the {@link Throwable} object contained within a
-     {@link ThrowableInformation} does not survive serialization.
-
-     @since 1.1 */
-  public
-  ThrowableInformation getThrowableInformation() {
-    return throwableInfo;
-  }
-
-
-    /**
-     * This removes the specified MDC property from the event.
-     * Access to the MDC is not synchronized, so this
-     * method should only be called when it is known that
-     * no other threads are accessing the MDC.
-     * @param propName the property name to remove
-     * @since 1.2.16
-     */
-    public Object removeProperty(String propName) {
-        if (mdcCopy == null) {
-            getMDCCopy();
-        }
-        if (mdcCopy == null) {
-            mdcCopy = new Hashtable();
-        }
-        return mdcCopy.remove(propName);
-    }
 }

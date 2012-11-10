@@ -168,7 +168,7 @@ public class LogEvent extends LogEventBase {
    * Return the level of this event. Use this form instead of directly
    * accessing the <code>level</code> field.  */
   public Level getLevel() {
-    return (Level) level;
+    return super.getLevel();
   }
 
   /**
@@ -197,7 +197,7 @@ public class LogEvent extends LogEventBase {
      @since 1.1 */
   public
   ThrowableInformation getThrowableInformation() {
-    return throwableInfo;
+    return super.getThrowableInformation();
   }
 
 

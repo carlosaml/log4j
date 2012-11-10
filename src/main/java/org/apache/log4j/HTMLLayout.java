@@ -137,7 +137,7 @@ public class HTMLLayout extends Layout {
     sbuf.append(Layout.LINE_SEP + "<tr>" + Layout.LINE_SEP);
 
     sbuf.append("<td>");
-    sbuf.append(event.timeStamp - LoggingEvent.getStartTime());
+    sbuf.append(event.timeStamp - LogEventBase.getStartTime());
     sbuf.append("</td>" + Layout.LINE_SEP);
 
     String escapedThread = Transform.escapeTags(event.getThreadName());

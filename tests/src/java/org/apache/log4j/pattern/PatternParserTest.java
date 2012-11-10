@@ -31,6 +31,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
+import org.apache.log4j.LogEventBase;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 
@@ -108,7 +109,7 @@ public class PatternParserTest extends TestCase {
   public void testBasic2() throws Exception {
     String result = convert("%relative %-5level [%thread] %logger - %m%n", null, event);
 
-    long expectedRelativeTime = event.timeStamp - LoggingEvent.getStartTime();
+    long expectedRelativeTime = event.timeStamp - LogEventBase.getStartTime();
     assertEquals(expectedRelativeTime + " INFO  [main] "+logger.getName()+" - msg 1" + Layout.LINE_SEP, result);
   }
 
