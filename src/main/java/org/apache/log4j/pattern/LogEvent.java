@@ -18,15 +18,8 @@
 package org.apache.log4j.pattern;
 
 import org.apache.log4j.*;
-import org.apache.log4j.helpers.Loader;
-import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.ThrowableInformation;
-
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Method;
-import java.util.*;
 
 // Contributors:   Nelson Minar <nelson@monkey.org>
 //                 Wolf Siberski
@@ -45,9 +38,6 @@ public class LogEvent extends LogEventBase {
 
   private static long startTime = System.currentTimeMillis();
 
-  /** Fully qualified name of the calling category class. */
-  transient public final String fqnOfCategoryClass;
-
     /**
    * <p>The category (logger) name.
    *   
@@ -58,34 +48,11 @@ public class LogEvent extends LogEventBase {
    * */
   final public String categoryName;
 
-  /** 
-   * Level of logging event. Level cannot be serializable because it
-   * is a flyweight.  Due to its special seralization it cannot be
-   * declared final either.
-   *   
-   * <p> This field should not be accessed directly. You shoud use the
-   * {@link #getLevel} method instead.
-   *
-   * @deprecated This field will be marked as private in future
-   * releases. Please do not access it directly. Use the {@link
-   * #getLevel} method instead.
-   * */
-  transient public Priority level;
-
-
-    /** The number of milliseconds elapsed from 1/1/1970 until logging event
-      was created. */
-  public final long timeStamp;
-  /** Location information for the caller. */
-  private LocationInfo locationInfo;
 
   // Serialization
   static final long serialVersionUID = -868428216207166145L;
 
   static final Integer[] PARAM_ARRAY = new Integer[1];
-  static final String TO_LEVEL = "toLevel";
-  static final Class[] TO_LEVEL_PARAMS = new Class[] {int.class};
-  static final Hashtable methodCache = new Hashtable(3); // use a tiny table
 
   /**
      Instantiate a LoggingEvent from the supplied parameters.
@@ -234,196 +201,15 @@ public class LogEvent extends LogEventBase {
   }
 
 
-    private
-  void readLevel(ObjectInputStream ois)
-                      throws java.io.IOException, ClassNotFoundException {
 
-    int p = ois.readInt();
-    try {
-      String className = (String) ois.readObject();
-      if(className == null) {
-	level = Level.toLevel(p);
-      } else {
-	Method m = (Method) methodCache.get(className);
-	if(m == null) {
-	  Class clazz = Loader.loadClass(className);
-	  // Note that we use Class.getDeclaredMethod instead of
-	  // Class.getMethod. This assumes that the Level subclass
-	  // implements the toLevel(int) method which is a
-	  // requirement. Actually, it does not make sense for Level
-	  // subclasses NOT to implement this method. Also note that
-	  // only Level can be subclassed and not Priority.
-	  m = clazz.getDeclaredMethod(TO_LEVEL, TO_LEVEL_PARAMS);
-	  methodCache.put(className, m);
-	}
-	PARAM_ARRAY[0] = new Integer(p);
-	level = (Level) m.invoke(null,  PARAM_ARRAY);
-      }
-    } catch(Exception e) {
-	LogLog.warn("Level deserialization failed, reverting to default.", e);
-	level = Level.toLevel(p);
-    }
-  }
 
-  private void readObject(ObjectInputStream ois)
-                        throws java.io.IOException, ClassNotFoundException {
-    ois.defaultReadObject();
-    readLevel(ois);
 
-    // Make sure that no location info is available to Layouts
-    if(locationInfo == null)
-      locationInfo = new LocationInfo(null, null);
-  }
 
-  private
-  void writeObject(ObjectOutputStream oos) throws java.io.IOException {
-    // Aside from returning the current thread name the wgetThreadName
-    // method sets the threadName variable.
-    this.getThreadName();
 
-    // This sets the renders the message in case it wasn't up to now.
-    this.getRenderedMessage();
 
-    // This call has a side effect of setting this.ndc and
-    // setting ndcLookupRequired to false if not already false.
-    this.getNDC();
 
-    // This call has a side effect of setting this.mdcCopy and
-    // setting mdcLookupRequired to false if not already false.
-    this.getMDCCopy();
 
-    // This sets the throwable sting representation of the event throwable.
-    this.getThrowableStrRep();
 
-    oos.defaultWriteObject();
-
-    // serialize this event's level
-    writeLevel(oos);
-  }
-
-  private
-  void writeLevel(ObjectOutputStream oos) throws java.io.IOException {
-
-    oos.writeInt(level.toInt());
-
-    Class clazz = level.getClass();
-    if(clazz == Level.class) {
-      oos.writeObject(null);
-    } else {
-      // writing directly the Class object would be nicer, except that
-      // serialized a Class object can not be read back by JDK
-      // 1.1.x. We have to resort to this hack instead.
-      oos.writeObject(clazz.getName());
-    }
-  }
-
-    /**
-     * Set value for MDC property.
-     * This adds the specified MDC property to the event.
-     * Access to the MDC is not synchronized, so this
-     * method should only be called when it is known that
-     * no other threads are accessing the MDC.
-     * @since 1.2.15
-     * @param propName
-     * @param propValue
-     */
-  public final void setProperty(final String propName,
-                          final String propValue) {
-        if (mdcCopy == null) {
-            getMDCCopy();
-        }
-        if (mdcCopy == null) {
-            mdcCopy = new Hashtable();
-        }
-        mdcCopy.put(propName, propValue);      
-  }
-
-    /**
-     * Return a property for this event. The return value can be null.
-     *
-     * Equivalent to getMDC(String) in log4j 1.2.  Provided
-     * for compatibility with log4j 1.3.
-     *
-     * @param key property name
-     * @return property value or null if property not set
-     * @since 1.2.15
-     */
-    public final String getProperty(final String key) {
-        Object value = getMDC(key);
-        String retval = null;
-        if (value != null) {
-            retval = value.toString();
-        }
-        return retval;
-    }
-
-    /**
-     * Check for the existence of location information without creating it
-     * (a byproduct of calling getLocationInformation).
-     * @return true if location information has been extracted.
-     * @since 1.2.15
-     */
-    public final boolean locationInformationExists() {
-      return (locationInfo != null);
-    }
-
-    /**
-     * Getter for the event's time stamp. The time stamp is calculated starting
-     * from 1970-01-01 GMT.
-     * @return timestamp
-     *
-     * @since 1.2.15
-     */
-    public final long getTimeStamp() {
-      return timeStamp;
-    }
-
-    /**
-     * Returns the set of the key values in the properties
-     * for the event.
-     *
-     * The returned set is unmodifiable by the caller.
-     *
-     * Provided for compatibility with log4j 1.3
-     *
-     * @return Set an unmodifiable set of the property keys.
-     * @since 1.2.15
-     */
-    public Set getPropertyKeySet() {
-      return getProperties().keySet();
-    }
-
-    /**
-     * Returns the set of properties
-     * for the event.
-     *
-     * The returned set is unmodifiable by the caller.
-     *
-     * Provided for compatibility with log4j 1.3
-     *
-     * @return Set an unmodifiable map of the properties.
-     * @since 1.2.15
-     */
-    public Map getProperties() {
-      getMDCCopy();
-      Map properties;
-      if (mdcCopy == null) {
-         properties = new HashMap();
-      } else {
-         properties = mdcCopy;
-      }
-      return Collections.unmodifiableMap(properties);
-    }
-
-    /**
-     * Get the fully qualified name of the calling logger sub-class/wrapper.
-     * Provided for compatibility with log4j 1.3
-     * @return fully qualified class name, may be null.
-     * @since 1.2.15
-     */
-    public String getFQNOfLoggerClass() {
-      return fqnOfCategoryClass;
-    }
 
 
 
