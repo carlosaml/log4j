@@ -521,6 +521,9 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
               <exclude>**/LogMF.java</exclude>
               <exclude>**/jmx/*.java</exclude>
           </excludes>
+          <rulesets>
+            <ruleset>pmdrules.xml</ruleset>
+          </rulesets>
         </configuration>
       </plugin>
       <plugin>
