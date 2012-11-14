@@ -132,6 +132,9 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
             <include>org/apache/log4j/TestLogSF.java</include>
             <include>org/apache/log4j/TestLogXF.java</include>
 
+            <include>org/apache/log4j/spi.LoggingEventTest.java</include>
+            <include>org/apache/log4j/pattern.LogEventTest.java</include>
+
             <include>org/apache/log4j/LevelTest.java</include>
             <include>org/apache/log4j/PriorityTest.java</include>
             <include>org/apache/log4j/CategoryTest.java</include>
@@ -144,7 +147,6 @@ target platform and specify -Dntdll_target=msbuild on the mvn command line.
             <include>org/apache/log4j/xml.XMLLayoutTest.java</include>
             <include>org/apache/log4j/HTMLLayoutTest.java</include>
             <include>org/apache/log4j/PatternLayoutTest.java</include>
-            <include>org/apache/log4j/spi.LoggingEventTest.java</include>
             <include>org/apache/log4j/spi.ThrowableInformationTest.java</include>
             <include>org/apache/log4j/spi.LocationInfoTest.java</include>
             <include>org/apache/log4j/PropertyConfiguratorTest.java</include>
